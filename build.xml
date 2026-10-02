@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="pkg_wishboxozon" default="make" basedir=".">
+	<property name="package" value="pkg_wishboxozon.zip" />
+
+	<target name="make" description="Build the Joomla package.">
+		<delete quiet="yes">
+			<fileset dir=".">
+				<include name="${package}" />
+			</fileset>
+		</delete>
+
+		<zip destfile="lib_wishboxozon.zip">
+			<fileset dir="./lib_wishboxozon">
+				<include name="language/**" />
+				<include name="src/**" />
+				<include name="lib_wishboxozon.xml" />
+			</fileset>
+		</zip>
+
+		<zip destfile="${package}">
+			<fileset dir=".">
+				<include name="lib_wishboxozon.zip" />
+				<include name="language/**" />
+				<include name="pkg_wishboxozon.xml" />
+			</fileset>
+		</zip>
+
+		<delete quiet="yes">
+			<fileset dir=".">
+				<include name="lib_wishboxozon.zip" />
+			</fileset>
+		</delete>
+	</target>
+</project>
