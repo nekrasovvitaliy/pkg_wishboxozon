@@ -13,6 +13,7 @@
 		<language tag="ru-RU">ru-RU/pkg_wishboxozon.sys.ini</language>
 	</languages>
 	<files>
+		<file type="component" id="com_wishboxozon">com_wishboxozon.zip</file>
 		<file type="library" id="wishboxozon">lib_wishboxozon.zip</file>
 	</files>
 </extension>

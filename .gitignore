@@ -1,2 +1,6 @@
 /.idea/
 /phing-latest.phar
+/.env
+/.phpunit.cache/
+/.phpunit.result.cache
+/vendor/

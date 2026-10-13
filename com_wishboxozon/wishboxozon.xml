@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" method="upgrade">
+	<name>com_wishboxozon</name>
+	<author>Nekrasov Vitaliy</author>
+	<authorEmail>nekrasov_vitaliy@list.ru</authorEmail>
+	<creationDate>October 2026</creationDate>
+	<version>1.0.0</version>
+	<description>COM_WISHBOXOZON_XML_DESCRIPTION</description>
+	<namespace path="src">Joomla\Component\WishboxOzon</namespace>
+	<administration>
+		<menu link="index.php?option=com_wishboxozon&amp;view=dashboard">COM_WISHBOXOZON</menu>
+		<files folder="administrator">
+			<filename>access.xml</filename>
+			<filename>config.xml</filename>
+			<folder>services</folder>
+			<folder>src</folder>
+			<folder>tmpl</folder>
+		</files>
+		<languages folder="administrator/language">
+			<language tag="en-GB">en-GB/com_wishboxozon.ini</language>
+			<language tag="en-GB">en-GB/com_wishboxozon.sys.ini</language>
+			<language tag="ru-RU">ru-RU/com_wishboxozon.ini</language>
+			<language tag="ru-RU">ru-RU/com_wishboxozon.sys.ini</language>
+		</languages>
+	</administration>
+</extension>

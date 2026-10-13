@@ -2,10 +2,10 @@
 
 Переиспользуемая библиотека интеграции с Ozon Seller API для расширений Joomla.
 
-Пакет устанавливает библиотеку `lib_wishboxozon` и регистрирует пространство имён
-`WishboxOzonLibrary`. Библиотека не зависит от JoomShopping, RetailCRM или других
-компонентов и может использоваться в плагинах, компонентах, модулях и консольных
-командах Joomla.
+Пакет устанавливает компонент настроек `com_wishboxozon`, библиотеку
+`lib_wishboxozon` и регистрирует пространство имён `WishboxOzonLibrary`.
+Библиотека не зависит от JoomShopping, RetailCRM или других компонентов и может
+использоваться в плагинах, компонентах, модулях и консольных командах Joomla.
 
 ## Возможности
 
@@ -27,21 +27,31 @@
 ## Установка
 
 Соберите `pkg_wishboxozon.zip` по инструкции ниже и установите его через менеджер
-расширений Joomla. После установки классы пространства имён `WishboxOzonLibrary`
-загружаются автозагрузчиком Joomla.
+расширений Joomla. После установки откройте **Компоненты → WishBox Ozon** и задайте
+Client ID, API-ключ, URL API, токен прокси, ID склада FBS и валюту цен. Классы
+пространства имён `WishboxOzonLibrary` загружаются автозагрузчиком Joomla.
 
-Расширения, использующие библиотеку, должны проверять её наличие до регистрации
-своих сервисов:
+В service provider другого расширения зарегистрируйте провайдеры только для
+необходимых Ozon-сервисов:
 
 ```php
 use RuntimeException;
-use WishboxOzonLibrary\Api\OzonApiClient;
+use WishboxOzonLibrary\Service\Provider\OzonApiClientProvider;
+use WishboxOzonLibrary\Service\Provider\OzonProductServiceProvider;
 
-if (!class_exists(OzonApiClient::class))
+if (!class_exists(OzonApiClientProvider::class)
+	|| !class_exists(OzonProductServiceProvider::class))
 {
 	throw new RuntimeException('The WishBox Ozon library must be installed.');
 }
+
+$container->registerServiceProvider(new OzonApiClientProvider());
+$container->registerServiceProvider(new OzonProductServiceProvider());
 ```
+
+`OzonApiClientProvider` читает подключение из `com_wishboxozon`. Для работы с FBS
+вместо провайдера товаров или вместе с ним зарегистрируйте
+`OzonFbsServiceProvider`. Все провайдеры регистрируют shared-экземпляры.
 
 ## Клиент Ozon Seller API
 
@@ -60,7 +70,33 @@ $warehouses = $ozonApiClient->call('/v1/warehouse/list');
 ```
 
 Для тестового сервера или HTTPS-прокси можно передать другой базовый URL четвёртым
-аргументом конструктора. Третий аргумент принимает внедряемый `Joomla\Http\Http`.
+аргументом конструктора. Третий аргумент принимает внедряемый `Joomla\Http\Http`,
+а пятый — общий секрет прокси.
+
+## Прокси Ozon Seller API
+
+Файл `ozon-api-proxy.php` можно разместить на сервере, который имеет доступ к
+`api-seller.ozon.ru`. Перед публикацией обязательно настройте в начале файла хотя
+бы один способ авторизации:
+
+- добавьте разрешённые адреса в `ALLOWED_CLIENT_IPS`; или
+- задайте длинное случайное значение `PROXY_SHARED_SECRET`.
+
+При использовании общего секрета клиент отправляет его в заголовке
+`X-Ozon-Proxy-Token`:
+
+```php
+$ozonApiClient = new OzonApiClient(
+	clientId: 'OZON_CLIENT_ID',
+	apiKey: 'OZON_API_KEY',
+	apiUrl: 'https://proxy.example.com/ozon-api-proxy.php',
+	proxyToken: 'OZON_PROXY_SHARED_SECRET'
+);
+```
+
+Прокси принимает адреса вида
+`/ozon-api-proxy.php/v4/posting/fbs/list`, пропускает только POST-запросы к
+версионированным методам Ozon и не сохраняет ключи или тела запросов.
 
 ## Товары, цены и остатки
 
@@ -194,6 +230,8 @@ catch (OzonApiException $exception)
 
 ```text
 pkg_wishboxozon/
+├── com_wishboxozon/
+│   └── administrator/
 ├── language/
 ├── lib_wishboxozon/
 │   ├── language/
@@ -204,9 +242,6 @@ pkg_wishboxozon/
 │   └── lib_wishboxozon.xml
 └── pkg_wishboxozon.xml
 ```
-
-Папка `legacy` оставлена только как исходный материал и в установочный пакет не
-включается.
 
 ## Сборка пакета
 
@@ -222,10 +257,32 @@ php phing-latest.phar
 cd lib_wishboxozon
 zip -r ../lib_wishboxozon.zip . -x '.DS_Store'
 cd ..
-zip -r pkg_wishboxozon.zip pkg_wishboxozon.xml language lib_wishboxozon.zip -x '.DS_Store'
+cd com_wishboxozon
+zip -r ../com_wishboxozon.zip . -x '.DS_Store'
+cd ..
+zip -r pkg_wishboxozon.zip pkg_wishboxozon.xml language lib_wishboxozon.zip com_wishboxozon.zip -x '.DS_Store'
 ```
 
 Полученный `pkg_wishboxozon.zip` можно установить через менеджер расширений Joomla.
+
+## Интеграционный тест Ozon
+
+Установите зависимости и создайте `.env` из примера:
+
+```bash
+composer install
+cp .env.example .env
+```
+
+Заполните `OZON_CLIENT_ID` и `OZON_API_KEY`, затем запустите:
+
+```bash
+composer test:integration
+```
+
+Тест выполняет только чтение: получает одну страницу FBS-отправлений за указанный
+период и проверяет структуру ответа Ozon. Значения `OZON_ORDER_LOOKBACK_DAYS` и
+`OZON_ORDER_LIMIT` позволяют изменить период и размер страницы.
 
 ## Лицензия
 

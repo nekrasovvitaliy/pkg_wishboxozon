@@ -32,6 +32,8 @@ final class OzonApiClient
 
 	private string $apiUrl;
 
+	private string $proxyToken;
+
 	/**
 	 * @since 1.0.0
 	 */
@@ -39,7 +41,8 @@ final class OzonApiClient
 		private readonly string $clientId,
 		private readonly string $apiKey,
 		?Http $http = null,
-		string $apiUrl = self::DEFAULT_API_URL
+		string $apiUrl = self::DEFAULT_API_URL,
+		string $proxyToken = ''
 	) {
 		$apiUrl = trim($apiUrl);
 
@@ -49,6 +52,7 @@ final class OzonApiClient
 		}
 
 		$this->apiUrl = rtrim($apiUrl, '/');
+		$this->proxyToken = trim($proxyToken);
 		$this->http = $http ?? new HttpFactory()->getHttp([], ['curl', 'stream']);
 	}
 
@@ -148,7 +152,10 @@ final class OzonApiClient
 
 		try
 		{
-			$body = json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+			$body = json_encode(
+				$data === [] ? (object) [] : $data,
+				JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+			);
 		}
 		catch (JsonException $exception)
 		{
@@ -157,15 +164,22 @@ final class OzonApiClient
 
 		try
 		{
+			$headers = [
+				'Client-Id'    => $this->clientId,
+				'Api-Key'      => $this->apiKey,
+				'Content-Type' => 'application/json',
+				'Accept'       => 'application/json, application/pdf',
+			];
+
+			if ($this->proxyToken !== '')
+			{
+				$headers['X-Ozon-Proxy-Token'] = $this->proxyToken;
+			}
+
 			$response = $this->http->post(
 				$this->apiUrl . $endpoint,
 				$body,
-				[
-					'Client-Id'    => $this->clientId,
-					'Api-Key'      => $this->apiKey,
-					'Content-Type' => 'application/json',
-					'Accept'       => 'application/json, application/pdf',
-				]
+				$headers
 			);
 		}
 		catch (Throwable $exception)

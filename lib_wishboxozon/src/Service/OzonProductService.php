@@ -8,6 +8,7 @@ namespace WishboxOzonLibrary\Service;
 
 use JsonException;
 use stdClass;
+use Throwable;
 use WishboxOzonLibrary\Api\OzonApiClient;
 use WishboxOzonLibrary\Exception\OzonApiException;
 use WishboxOzonLibrary\Exception\OzonProductUpdateException;
@@ -23,6 +24,8 @@ defined('_JEXEC') or die;
  */
 final readonly class OzonProductService
 {
+	private const int BATCH_SIZE = 100;
+
 	/**
 	 * @since 1.0.0
 	 */
@@ -170,6 +173,86 @@ final readonly class OzonProductService
 		$this->validateUpdateResult($response, 'stock');
 
 		return $response;
+	}
+
+	/**
+	 * Update Ozon prices and stocks from normalized product data.
+	 *
+	 * @param   list<array{offer_id: string, product_id: int, price: float|null, stock: int}>  $products      Products to update.
+	 * @param   int                                                                            $warehouseId  Ozon warehouse ID.
+	 * @param   string                                                                         $currencyCode Ozon currency code.
+	 *
+	 * @return array{updated: int, skipped: int, failed: int, errors: list<string>}
+	 *
+	 * @since 1.0.0
+	 *
+	 * @noinspection PhpUnused
+	 */
+	public function updateProducts(array $products, int $warehouseId, string $currencyCode = 'RUB'): array
+	{
+		$result = [
+			'updated' => 0,
+			'skipped' => 0,
+			'failed'  => 0,
+			'errors'  => [],
+		];
+
+		if ($warehouseId < 1)
+		{
+			$result['failed'] = 1;
+			$result['errors'][] = 'Ozon warehouse ID must be configured.';
+
+			return $result;
+		}
+
+		$currencyCode = trim($currencyCode) ?: 'RUB';
+		$updates = [];
+
+		foreach ($products as $product)
+		{
+			$offerId = trim((string) ($product['offer_id'] ?? ''));
+			$productId = (int) ($product['product_id'] ?? 0);
+			$price = $product['price'] ?? null;
+
+			if ($offerId === '' || $productId < 1 || !is_numeric($price))
+			{
+				$result['skipped']++;
+
+				continue;
+			}
+
+			$updates[] = [
+				'price' => [
+					'offer_id'      => $offerId,
+					'product_id'    => $productId,
+					'price'         => number_format(max(0.0, (float) $price), 2, '.', ''),
+					'currency_code' => $currencyCode,
+				],
+				'stock' => [
+					'offer_id'    => $offerId,
+					'product_id'  => $productId,
+					'stock'       => max(0, (int) ($product['stock'] ?? 0)),
+					'warehouse_id' => $warehouseId,
+				],
+			];
+		}
+
+		foreach (array_chunk($updates, self::BATCH_SIZE) as $batch)
+		{
+			try
+			{
+				$this->updatePrices(array_column($batch, 'price'));
+				$this->updateStocks(array_column($batch, 'stock'));
+				$result['updated'] += count($batch);
+			}
+			catch (Throwable $throwable)
+			{
+				$result['failed'] += count($batch);
+				$result['errors'][] = $throwable->getMessage();
+			}
+		}
+
+		return $result;
 	}
 
 	/**

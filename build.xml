@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="pkg_wishboxozon" default="make" basedir=".">
 	<property name="package" value="pkg_wishboxozon.zip" />
+	<property name="component" value="com_wishboxozon.zip" />
 
 	<target name="make" description="Build the Joomla package.">
 		<delete quiet="yes">
 			<fileset dir=".">
 				<include name="${package}" />
+				<include name="${component}" />
 			</fileset>
 		</delete>
 
@@ -17,8 +19,16 @@
 			</fileset>
 		</zip>
 
+		<zip destfile="${component}">
+			<fileset dir="./com_wishboxozon">
+				<include name="administrator/**" />
+				<include name="wishboxozon.xml" />
+			</fileset>
+		</zip>
+
 		<zip destfile="${package}">
 			<fileset dir=".">
+				<include name="${component}" />
 				<include name="lib_wishboxozon.zip" />
 				<include name="language/**" />
 				<include name="pkg_wishboxozon.xml" />
@@ -27,6 +37,7 @@
 
 		<delete quiet="yes">
 			<fileset dir=".">
+				<include name="${component}" />
 				<include name="lib_wishboxozon.zip" />
 			</fileset>
 		</delete>

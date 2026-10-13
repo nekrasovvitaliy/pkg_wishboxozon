@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright   (c) 2013-2026 Nekrasov Vitaliy <nekrasov_vitaliy@list.ru>
- * @license     GNU General Public License version 2 or later;
+ * @license         GNU General Public License version 2 or later;
  */
 
 namespace WishboxOzonLibrary\Service;
@@ -18,7 +18,9 @@ defined('_JEXEC') or die;
 /**
  * Manages Ozon FBS postings, shipment confirmation, and package labels.
  *
- * @since 1.0.0
+ * @since        1.0.0
+ *
+ * @noinspection PhpUnused
  */
 final readonly class OzonFbsService
 {
@@ -37,15 +39,18 @@ final readonly class OzonFbsService
 	 *
 	 * @throws OzonApiException
 	 *
-	 * @since 1.0.0
+	 * @since        1.0.0
+	 *
+	 * @noinspection PhpUnused
 	 */
 	public function getPostings(
-		array $filter,
-		int $limit = 1000,
+		array  $filter,
+		int    $limit = 1000,
 		string $cursor = '',
 		string $direction = 'ASC',
-		array $with = []
-	): stdClass {
+		array  $with = []
+	): stdClass
+	{
 		$direction = strtoupper($direction);
 
 		if (!in_array($direction, ['ASC', 'DESC'], true))
@@ -72,7 +77,9 @@ final readonly class OzonFbsService
 	 *
 	 * @throws OzonApiException
 	 *
-	 * @since 1.0.0
+	 * @since        1.0.0
+	 *
+	 * @noinspection PhpUnused
 	 */
 	public function getPosting(string $postingNumber, array $with = []): stdClass
 	{
@@ -95,7 +102,9 @@ final readonly class OzonFbsService
 	 *
 	 * @throws OzonApiException
 	 *
-	 * @since 1.0.0
+	 * @since        1.0.0
+	 *
+	 * @noinspection PhpUnused
 	 */
 	public function ship(string $postingNumber, array $packages, array $with = []): stdClass
 	{
@@ -123,7 +132,9 @@ final readonly class OzonFbsService
 	 *
 	 * @throws OzonApiException
 	 *
-	 * @since 1.0.0
+	 * @since        1.0.0
+	 *
+	 * @noinspection PhpUnused
 	 */
 	public function getPackageLabels(array $postingNumbers): string
 	{

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+	<fieldset name="ozon" label="COM_WISHBOXOZON_FIELDSET_CONNECTION_LABEL">
+		<field
+			name="ozon_client_id"
+			type="text"
+			label="COM_WISHBOXOZON_FIELD_CLIENT_ID_LABEL"
+			required="true"
+			filter="raw"
+		/>
+		<field
+			name="ozon_api_key"
+			type="password"
+			label="COM_WISHBOXOZON_FIELD_API_KEY_LABEL"
+			required="true"
+			filter="raw"
+		/>
+		<field
+			name="ozon_api_url"
+			type="url"
+			label="COM_WISHBOXOZON_FIELD_API_URL_LABEL"
+			description="COM_WISHBOXOZON_FIELD_API_URL_DESC"
+			default="https://api-seller.ozon.ru"
+			required="true"
+			filter="raw"
+			validate="url"
+		/>
+		<field
+			name="ozon_proxy_token"
+			type="password"
+			label="COM_WISHBOXOZON_FIELD_PROXY_TOKEN_LABEL"
+			description="COM_WISHBOXOZON_FIELD_PROXY_TOKEN_DESC"
+			filter="raw"
+		/>
+		<field
+			name="ozon_warehouse_id"
+			type="number"
+			label="COM_WISHBOXOZON_FIELD_WAREHOUSE_ID_LABEL"
+			required="true"
+			min="1"
+			filter="integer"
+		/>
+		<field
+			name="ozon_currency_code"
+			type="text"
+			label="COM_WISHBOXOZON_FIELD_CURRENCY_CODE_LABEL"
+			default="RUB"
+			required="true"
+			filter="cmd"
+		/>
+	</fieldset>
+	<fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL">
+		<field
+			name="rules"
+			type="rules"
+			label="JCONFIG_PERMISSIONS_LABEL"
+			filter="rules"
+			component="com_wishboxozon"
+			section="component"
+		/>
+	</fieldset>
+</config>

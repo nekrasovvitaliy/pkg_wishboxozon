@@ -1,0 +1,28 @@
+{
+    "name": "wishbox/pkg-wishboxozon",
+    "description": "Reusable Joomla library for the Ozon Seller API",
+    "type": "project",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.5"
+    },
+    "require-dev": {
+        "joomla/http": "^4.0",
+        "phpunit/phpunit": "^12.5",
+        "vlucas/phpdotenv": "^5.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "WishboxOzonLibrary\\": "lib_wishboxozon/src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --configuration phpunit.xml.dist",
+        "test:integration": "phpunit --configuration phpunit.integration.xml.dist"
+    }
+}
