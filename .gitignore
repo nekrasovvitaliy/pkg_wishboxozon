@@ -1,4 +1,5 @@
-/.idea/
+/.idea/*
+!/.idea/deployment.xml
 /phing-latest.phar
 /.env
 /.phpunit.cache/

@@ -10,7 +10,7 @@
 		/>
 		<field
 			name="ozon_api_key"
-			type="password"
+			type="textarea"
 			label="COM_WISHBOXOZON_FIELD_API_KEY_LABEL"
 			required="true"
 			filter="raw"
@@ -27,7 +27,7 @@
 		/>
 		<field
 			name="ozon_proxy_token"
-			type="password"
+			type="textarea"
 			label="COM_WISHBOXOZON_FIELD_PROXY_TOKEN_LABEL"
 			description="COM_WISHBOXOZON_FIELD_PROXY_TOKEN_DESC"
 			filter="raw"

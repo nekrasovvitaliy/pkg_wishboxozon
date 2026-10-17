@@ -20,6 +20,48 @@ use WishboxOzonLibrary\Service\OzonProductService;
 final class OzonProductServiceTest extends TestCase
 {
 	/**
+	 * Verify loading product identifiers from all cursor pages.
+	 *
+	 * @return void
+	 *
+	 * @since 1.0.0
+	 */
+	public function testLoadsAllProductIds(): void
+	{
+		$requests = [];
+		$responses = [
+			'{"result":{"items":[{"offer_id":"CRM-101","product_id":101}],"last_id":"next"}}',
+			'{"result":{"items":[{"offer_id":"CRM-102","product_id":102}],"last_id":""}}',
+		];
+		$http = $this->createMock(Http::class);
+		$http->expects(self::exactly(2))
+			->method('post')
+			->willReturnCallback(
+				static function (string $url, string $body) use (&$requests, &$responses): Response {
+					$requests[] = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+					$response = new Response('php://memory', 200, ['Content-Type' => 'application/json']);
+					$response->getBody()
+						->write(array_shift($responses));
+
+					return $response;
+				}
+			);
+		$service = new OzonProductService(
+			new OzonApiClient('client-id', 'api-key', $http)
+		);
+
+		self::assertSame(
+			[
+				['offer_id' => 'CRM-101', 'product_id' => 101],
+				['offer_id' => 'CRM-102', 'product_id' => 102],
+			],
+			$service->getProductIds()
+		);
+		self::assertSame('', $requests[0]['last_id']);
+		self::assertSame('next', $requests[1]['last_id']);
+	}
+
+	/**
 	 * Verify price and stock payload generation.
 	 *
 	 * @return void

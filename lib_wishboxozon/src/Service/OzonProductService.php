@@ -7,6 +7,7 @@
 namespace WishboxOzonLibrary\Service;
 
 use JsonException;
+use RuntimeException;
 use stdClass;
 use Throwable;
 use WishboxOzonLibrary\Api\OzonApiClient;
@@ -25,6 +26,7 @@ defined('_JEXEC') or die;
 final readonly class OzonProductService
 {
 	private const int BATCH_SIZE = 100;
+	private const int PRODUCT_LIST_PAGE_SIZE = 1000;
 
 	/**
 	 * @since 1.0.0
@@ -52,6 +54,54 @@ final readonly class OzonProductService
 				'limit'   => min(1000, max(1, $limit)),
 			]
 		);
+	}
+
+	/**
+	 * Load all Ozon product identifiers using cursor pagination.
+	 *
+	 * @return list<array{offer_id: string, product_id: int}> Product identifiers.
+	 *
+	 * @throws OzonApiException When the Ozon request fails.
+	 * @throws RuntimeException When Ozon returns an invalid product list.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @noinspection PhpUnused
+	 */
+	public function getProductIds(): array
+	{
+		$productIds = [];
+		$lastId = '';
+
+		do
+		{
+			$response = $this->getProductList([], $lastId, self::PRODUCT_LIST_PAGE_SIZE);
+			$items = $response->result->items ?? null;
+
+			if (!is_array($items))
+			{
+				throw new RuntimeException('Ozon returned an invalid product list.');
+			}
+
+			foreach ($items as $item)
+			{
+				$productIds[] = [
+					'offer_id'   => is_object($item) ? trim((string) ($item->offer_id ?? '')) : '',
+					'product_id' => is_object($item) ? (int) ($item->product_id ?? 0) : 0,
+				];
+			}
+
+			$nextLastId = trim((string) ($response->result->last_id ?? ''));
+
+			if ($items === [] || $nextLastId === '' || $nextLastId === $lastId)
+			{
+				break;
+			}
+
+			$lastId = $nextLastId;
+		} while (true);
+
+		return $productIds;
 	}
 
 	/**
